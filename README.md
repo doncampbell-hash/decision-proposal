@@ -18,7 +18,7 @@ Claude lays the feature out as **one visual HTML page**: the model in a paragrap
 | [`examples/room-booking.html`](skills/decision-proposal/examples/room-booking.html) | **A filled sample**: booking meeting rooms at a fictional company. It's shown after the decider answered, so you can see the decision register, a frame added after the answers, and follow-up questions. |
 | [`examples/room-booking-spec.md`](skills/decision-proposal/examples/room-booking-spec.md) | The spec that sample became. |
 
-GitHub shows the HTML files as source code. To see them as pages, download the file and open it in a browser.
+See them as pages: **[the sample](https://doncampbell-hash.github.io/decision-proposal/skills/decision-proposal/examples/room-booking.html)** · **[the blank page](https://doncampbell-hash.github.io/decision-proposal/skills/decision-proposal/template.html)**. (GitHub's file view shows the HTML as code.)
 
 ## The sample: booking meeting rooms
 
@@ -66,7 +66,9 @@ claude plugin install decision-proposal@decision-proposal
 
 Ask in plain words, in the project you're working on:
 
-> Write a proposal for recurring bookings, with the edge cases and the questions you need answered.
+> Write a proposal for room booking, with the edge cases and the questions you need answered.
+
+That's enough to start. [Example prompts](#example-prompts), below, show how to ask for something more specific.
 
 Or invoke it by name: `/decision-proposal` (plain skill), or `/decision-proposal:decision-proposal` (plugin).
 
@@ -74,6 +76,95 @@ Then:
 1. **Read the page** and answer the questions by number. Anything you skip is taken as recommended, and the page says so.
 2. Claude **revises the page**: the questions become decisions, frames the answers added are marked "new", and follow-up questions appear as N1, N2… Repeat until nothing's open.
 3. Ask for **the spec**. Build from it. As each piece ships, Claude adds an "As built" note to its section, so the spec stays true.
+
+## Example prompts
+
+All on the same topic, room booking, so you can compare what changes. The more you tell it, the less it has to guess. The useful things to say: what exists already, what's already decided, where the risk is, who will decide, and what's out of scope.
+
+**1 · The simple ask.** Fine when the feature is new and you want Claude to find the questions.
+
+```text
+Write a proposal for room booking, with the edge cases and the questions you need answered.
+```
+
+**2 · Grounded in code that exists.** Point it at the files so the "what this touches" table is real and the mockups look like your app.
+
+```text
+Write a proposal for room booking. We already have a rooms table (used by the office
+map), organisation → building settings with overrides, a job queue, and calendar sync
+that reads free/busy. Read src/db/schema/rooms.ts, src/settings/ and src/calendar/
+before you draw anything, and make the "what this touches" table name the real tables,
+routes and permissions. Match the sidebar shell in app/(app)/layout.tsx and use the
+colours in src/styles/tokens.css.
+```
+
+**3 · Some things already decided.** So it doesn't spend questions on settled ground.
+
+```text
+Write a proposal for room booking. Facilities has already decided these, so don't ask:
+bookings are released 10 minutes after the start if nobody checks in; no buffer between
+bookings; the longest booking is 4 hours. Spend the questions on what's still open:
+repeating bookings, rooms that need approval, and what people outside a booking can
+see of it. Put the riskiest question first.
+```
+
+**4 · Extending a feature you already have.** Narrow the scope, and name the edge cases you're worried about.
+
+```text
+We already have one-off room booking (see docs/specs/room-booking.md). Write a proposal
+for weekly repeats. Draw every way a series goes wrong: dates that clash when it's
+created, a room taken out of service halfway through, the organiser leaving the
+company, a clock change, three no-shows in a row. Keep everything that exists as it
+is unless a frame says why it has to change.
+```
+
+**5 · Where the risk is.** Tell it what to be careful about and it'll organise the page around that.
+
+```text
+Write a proposal for room tablets: a tablet by each meeting-room door showing the
+room's day, with Check in and Book now. These are shared devices in public corridors,
+so treat that as the main risk: what a tablet's sign-in can and can't do, what it
+shows to someone walking past (private bookings), what happens if one is stolen, and
+who can pair or remove one. Include a "what we keep, and what we never keep" table,
+and mark which build slice needs a security review.
+```
+
+**6 · No screens.** The method works for an API or a back end: frames become request/response examples and the states table becomes the errors.
+
+```text
+Write a proposal for the room booking API only, no screens: create, move, cancel,
+check in, and find a room. Use the frames for request and response examples, and the
+states table for every status code and error. Draw these edge cases: two clients
+booking the same slot at once, a retry with the same idempotency key, and a booking
+moved while a client holds an old copy. Questions about versioning and rate limits
+go first.
+```
+
+**7 · Written for the person deciding.** Say who answers and how they read.
+
+```text
+Write a proposal for room booking for Sam, our Workplace lead, to decide. Sam isn't
+technical: keep routes, tables and permissions in the captions and the "what this
+touches" table, and write the paragraphs and questions in plain words. No more than
+eight questions.
+```
+
+**8 · Answering the questions.** You don't need to repeat the questions. Numbers are enough, and anything skipped is taken as recommended. These are the answers recorded in the sample's decision register:
+
+```text
+1–4 as recommended. 5: no, an approval request nobody answers by the start is
+declined, not approved. 6: show titles by default, but add a Private switch that hides
+the title and organiser. 7: move bookings to a similar room where one is free, cancel
+the rest, tell every organiser, and draw it. 8 as recommended. Skipping 9.
+```
+
+**9 · Asking for the spec.** Once nothing's open.
+
+```text
+N1–N3 as recommended. Write the spec in docs/specs/room-booking.md: one section per
+PR, the four slices from the build list. The tablet slice needs a security review.
+Then mark the proposal approved.
+```
 
 ## What makes it work
 
