@@ -33,7 +33,7 @@ The bottom of the sample: the model, the decisions (with what changed from the r
 **As a Claude Code plugin** (updates when the repo does):
 
 ```bash
-claude plugin marketplace add OWNER/decision-proposal
+claude plugin marketplace add doncampbell-hash/decision-proposal
 ```
 
 ```bash
