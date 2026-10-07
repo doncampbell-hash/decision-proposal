@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[Feature] — proposal</title>
+<!--
+  DRAFT [YYYY-MM-DD]. Not built. Builds on: [specs, PRs, files:line]. No design exists for: [screens].
+  Frames follow: [the project's tokens file / shell]. Replace the :root values below with the
+  project's design tokens if it has them.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#0a0d14; --surface:#0d1119; --panel:#131925; --raised:#1a2235; --sunk:#080b12;
+    --border:#212d44; --border-hi:#2e3f60; --border-lo:#18213a;
+    --bright:#e6eeff; --label:#c2ceea; --body:#94a3c0; --muted:#889fc5; --dim:#5c6f94;
+    --accent:#2563eb; --accent-hi:#6b96ff; --accent-lo:rgba(37,99,235,.12);
+    --gold:#c9a363; --gold-lo:rgba(201,163,99,.14); --ok:#34d399; --ok-lo:rgba(52,211,153,.14);
+    --warn:#f97316; --warn-lo:rgba(249,115,22,.14); --danger:#f87171; --danger-lo:rgba(248,113,113,.14);
+    --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",ui-monospace,monospace;
+    --radius:6px; --radius-lg:10px;
+    color-scheme: dark;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:var(--body); font:13px/1.5 var(--font-body); }
+  .page { max-width:1320px; margin:0 auto; padding:32px 16px 64px; }
+
+  /* page text */
+  h1.t { font-size:22px; font-weight:600; color:var(--bright); margin:0; letter-spacing:-.01em; }
+  h2.sec { font-size:15px; font-weight:600; color:var(--bright); margin:44px 0 4px; }
+  h2.sec small { font-weight:400; color:var(--muted); font-size:12px; }
+  p.sec, .lede { color:var(--muted); font-size:12.5px; margin:6px 0 16px; max-width:900px; }
+  .lede b, p.sec b, p.note b { color:var(--label); font-weight:500; }
+  p.note { color:var(--muted); font-size:12px; max-width:900px; margin:14px 0 0; }
+  .mono { font-family:var(--font-mono); font-size:11px; }
+  .caption { font-family:var(--font-mono); font-size:10.5px; color:var(--muted); margin-top:8px; }
+  .caption b { color:var(--label); font-weight:500; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr)); gap:20px; align-items:start; }
+  .grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:20px; align-items:start; }
+  .scroll { overflow-x:auto; }
+
+  /* flow strip */
+  .flow { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin:0 0 8px; }
+  .step { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:12px 14px; }
+  .step .k { font-family:var(--font-mono); font-size:10.5px; color:var(--accent-hi); }
+  .step b { display:block; color:var(--bright); font-weight:600; font-size:13px; margin:4px 0 2px; }
+  .step span { font-size:11.5px; color:var(--muted); }
+
+  /* mockup primitives: an app shell (sidebar + top bar), tables, buttons, pills, fields, dialogs */
+  .screen { border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; background:var(--ink); }
+  .shell { display:flex; min-height:420px; }
+  .side { width:176px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border); padding:12px 8px; }
+  .side .grp { font-size:11px; color:var(--dim); padding:10px 10px 4px; }
+  .side span { display:block; padding:6px 10px; border-radius:var(--radius); font-size:12.5px; color:var(--body); border-left:2px solid transparent; }
+  .side span.on { background:var(--accent-lo); color:var(--bright); border-left-color:var(--accent); padding-left:8px; }
+  .main { flex:1; min-width:0; display:flex; flex-direction:column; }
+  .top { height:56px; padding:0 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; gap:14px; }
+  .top h3 { margin:0; font-size:13px; font-weight:600; color:var(--bright); }
+  .top .m { font-size:11.5px; color:var(--muted); }
+  .top .r { margin-left:auto; display:flex; gap:8px; }
+  .content { padding:18px 20px; }
+  .btn { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px; border-radius:var(--radius); font-size:12px; background:var(--accent); color:#fff; font-weight:500; white-space:nowrap; }
+  .btn.ghost { background:transparent; color:var(--label); border:1px solid var(--border-hi); }
+  .btn.sm { height:26px; padding:0 10px; font-size:11.5px; }
+  .btn.danger { background:var(--danger); color:var(--ink); }
+  .btn.off { opacity:.4; }
+  .opill { font-size:10.5px; font-family:var(--font-mono); padding:2px 7px; border-radius:99px; background:var(--raised); color:var(--label); border:1px solid var(--border-hi); white-space:nowrap; }
+  .opill.ok { background:var(--ok-lo); color:var(--ok); border-color:transparent; }
+  .opill.warn { background:var(--warn-lo); color:var(--warn); border-color:transparent; }
+  .opill.b { background:var(--accent-lo); color:var(--accent-hi); border-color:transparent; }
+  .opill.v { background:var(--gold-lo); color:var(--gold); border-color:transparent; }
+  .opill.m { background:transparent; color:var(--muted); }
+  table.t { width:100%; border-collapse:collapse; }
+  table.t th { text-align:left; font-size:11.5px; font-weight:500; color:var(--muted); padding:0 14px; height:32px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  table.t th:first-child, table.t td:first-child { padding-left:20px; }
+  table.t td { padding:0 14px; height:44px; border-bottom:1px solid var(--border-lo); font-size:12.5px; color:var(--label); vertical-align:middle; }
+  table.t td .sub { display:block; font-size:11px; color:var(--muted); line-height:1.3; }
+  table.t tr.on td { background:var(--accent-lo); }
+  table.t tr.dim td { color:var(--dim); }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:12px; color:var(--label); font-weight:500; margin-bottom:6px; }
+  .field .hint { font-size:11.5px; color:var(--muted); margin-top:5px; }
+  .input { height:32px; border:1px solid var(--border-hi); background:var(--sunk); border-radius:var(--radius); padding:0 10px; display:flex; align-items:center; color:var(--bright); font-size:12.5px; }
+  .seg { display:inline-flex; gap:2px; background:var(--sunk); border:1px solid var(--border); border-radius:var(--radius); padding:2px; }
+  .seg span { font-size:12px; padding:3px 10px; border-radius:4px; color:var(--muted); }
+  .seg span.on { background:var(--raised); color:var(--bright); }
+  .banner { font-size:11.5px; color:var(--label); background:var(--gold-lo); border-left:2px solid var(--gold); border-radius:0 var(--radius) var(--radius) 0; padding:7px 11px; margin-top:10px; line-height:1.45; }
+  .banner.b { background:var(--accent-lo); border-left-color:var(--accent); }
+  .banner.w { background:var(--warn-lo); border-left-color:var(--warn); }
+  .dialog { max-width:480px; margin:18px auto; background:var(--panel); border:1px solid var(--border-hi); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:0 20px 40px -12px rgba(0,0,0,.6); }
+  .dialog h5 { margin:0 0 3px; font-size:15px; color:var(--bright); font-weight:600; }
+  .dialog .m { font-size:12px; color:var(--muted); margin-bottom:14px; }
+  .dialog .acts { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; align-items:center; }
+  .dialog .acts .l { margin-right:auto; font-size:11.5px; color:var(--muted); }
+  /* a phone-sized frame for mobile / end-user screens */
+  .phone { width:300px; max-width:100%; margin:0 auto; border:1px solid var(--border-hi); border-radius:28px; padding:28px 18px; background:var(--panel); min-height:520px; }
+  .phone h1 { font-size:20px; color:var(--bright); margin:40px 0 8px; font-weight:600; }
+  .phone p { font-size:13px; color:var(--muted); }
+
+  /* tables of rules, states and copy, kept data, and the survey */
+  table.copy { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  table.copy th { text-align:left; font-size:11px; font-weight:500; color:var(--dim); padding:8px 12px; border-bottom:1px solid var(--border); background:var(--panel); }
+  table.copy td { padding:9px 12px; border-bottom:1px solid var(--border-lo); font-size:12px; color:var(--label); vertical-align:top; }
+  table.copy td.k { font-family:var(--font-mono); font-size:11px; color:var(--muted); white-space:nowrap; }
+  table.copy td q { color:var(--bright); quotes:"\201C" "\201D"; }
+  table.copy tr.set td { background:var(--panel); color:var(--gold); font-size:11px; font-weight:600; }
+
+  /* the notes panel: how it works, questions → decisions, build */
+  .notes { margin-top:44px; background:var(--surface); border:1px solid var(--border-hi); border-radius:var(--radius-lg); padding:20px 22px; }
+  .notes h3 { margin:0 0 4px; font-size:15px; color:var(--bright); font-weight:600; }
+  .notes h4 { margin:20px 0 6px; font-size:12px; font-weight:600; color:var(--gold); }
+  .notes ol, .notes ul { margin:0; padding-left:20px; }
+  .notes li { margin:7px 0; font-size:12.5px; color:var(--body); }
+  .notes li b { color:var(--bright); font-weight:500; }
+  .notes li i { color:var(--label); }
+
+  @media (max-width:720px) { .side { display:none; } }
+</style>
+</head>
+<body>
+<main class="page">
+  <h1 class="t">[Feature] — proposal</h1>
+  <p class="lede">[One paragraph: the whole idea in plain words. <b>Bold the nouns</b> the reader must hold on to. Say what it is not, and what stays the same.]</p>
+
+  <div class="flow">
+    <div class="step"><div class="k">where</div><b>[Scope / where it applies]</b><span>[One line.]</span></div>
+    <div class="step"><div class="k">how</div><b>[How it runs]</b><span>[One line.]</span></div>
+    <div class="step"><div class="k">who</div><b>[Who decides / acts]</b><span>[One line.]</span></div>
+    <div class="step"><div class="k">kept</div><b>[What's recorded]</b><span>[One line.]</span></div>
+  </div>
+  <!-- Phase 2: add a dated note here — what changed after the answers, which frames are new.
+  <p class="note"><b>Revised [date]</b> after [who]'s answers (recorded in the notes panel). New: … <b>The frames marked new need a look before the spec.</b></p> -->
+
+  <!-- ─────────── 1 · A SCREEN ─────────── -->
+  <h2 class="sec">1 · [Area] <small>· [where it lives]</small></h2>
+  <p class="sec">[Why this frame is shaped this way, in two or three sentences.]</p>
+  <div class="screen"><div class="shell">
+    <div class="side"><div class="grp">[Group]</div><span>[Page]</span><span class="on">[This page]</span><span>[Page]</span></div>
+    <div class="main">
+      <div class="top"><h3>[Page title]</h3><span class="m">[breadcrumb]</span><div class="r"><span class="btn ghost sm">[Secondary]</span><span class="btn sm">[Primary]</span></div></div>
+      <table class="t">
+        <thead><tr><th>[Column]</th><th>[Column]</th><th>[Status]</th></tr></thead>
+        <tbody>
+          <tr><td>[Realistic name]<span class="sub">[detail]</span></td><td>[10:00]</td><td><span class="opill ok">[Done]</span></td></tr>
+          <tr class="on"><td>[Selected row]<span class="sub">[detail]</span></td><td>[10:30]</td><td><span class="opill warn">[Needs a person]</span></td></tr>
+          <tr class="dim"><td>[Past row]<span class="sub">[detail]</span></td><td>[09:00]</td><td><span class="opill m">[Ended]</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div></div>
+  <div class="caption"><b>1a</b> · <span class="mono">[/route]</span> · <span class="mono">[permission]</span> · [defaults and technical detail go here, not in the frame]</div>
+
+  <!-- ─────────── 2 · EDGE CASES, EACH ITS OWN FRAME ─────────── -->
+  <h2 class="sec">2 · [When it can't / goes wrong] <small>· [edge cases]</small></h2>
+  <p class="sec">[What the reviewer would ask "what happens when…" about.]</p>
+  <div class="grid3">
+    <div>
+      <div class="dialog">
+        <h5>[Confirm title]</h5>
+        <div class="m">[What will happen, with the real count: "Delete 3 bookings? 1 has already started."]</div>
+        <div class="field"><label>[Choice]</label><span class="seg"><span class="on">[Recommended]</span><span>[Other]</span></span><div class="hint">[Why the default.]</div></div>
+        <div class="banner w">[The consequence the user must not miss.]</div>
+        <div class="acts"><span class="l">[Audited]</span><span class="btn ghost sm">Keep</span><span class="btn danger sm">[Do it]</span></div>
+      </div>
+      <div class="caption"><b>2a</b> · [the case]</div>
+    </div>
+    <div>
+      <div class="phone"><h1>[End-user headline.]</h1><p>[What they see; never data they shouldn't.]</p></div>
+      <div class="caption"><b>2b</b> · [the case, the device]</div>
+    </div>
+    <div>
+      <div class="screen"><div class="content">
+        <div class="field"><label>[Empty / nothing found]</label><div class="input" style="color:var(--dim)">[query]</div><div class="hint">[What the empty state offers next.]</div></div>
+        <span class="btn ghost sm">[Next action]</span>
+      </div></div>
+      <div class="caption"><b>2c</b> · [the case]</div>
+    </div>
+  </div>
+
+  <!-- ─────────── RESOLUTION ORDER (when several rules can decide) ─────────── -->
+  <h2 class="sec">3 · [Which rule wins]</h2>
+  <table class="copy">
+    <thead><tr><th>For one [thing]</th><th>[The setting] is…</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1 · [most specific]</td><td>[wins if set. Otherwise ↓]</td></tr>
+      <tr><td class="k">2 · [next]</td><td>[…]</td></tr>
+      <tr><td class="k">3 · [default]</td><td>[the account-wide default]</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────── KEPT / NEVER KEPT (personal or sensitive data) ─────────── -->
+  <h2 class="sec">4 · What we keep, and what we never keep</h2>
+  <table class="copy">
+    <thead><tr><th>Field</th><th>Kept?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="k">[field]</td><td>kept</td><td>[why it's needed]</td></tr>
+      <tr><td class="k">[field]</td><td>never</td><td>[why not; what it would cost if leaked]</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────── STATES AND COPY ─────────── -->
+  <h2 class="sec">5 · States and copy</h2>
+  <table class="copy">
+    <thead><tr><th>When</th><th>[User] sees</th><th>[Operator] sees</th></tr></thead>
+    <tbody>
+      <tr><td class="k">[happy path]</td><td><q>[exact words]</q></td><td><q>[exact words]</q></td></tr>
+      <tr><td class="k">[edge case]</td><td><q>[exact words]</q></td><td><q>[exact words]</q></td></tr>
+      <tr><td class="k">[refused]</td><td><q>[exact words]</q></td><td><q>[exact words]</q> · [what they can do next]</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────── SURVEY OF THE REAL CODE ─────────── -->
+  <h2 class="sec">6 · What [this] touches <small>· survey of the code on main, [date]</small></h2>
+  <div class="scroll"><table class="copy" style="min-width:760px">
+    <thead><tr><th>Area</th><th>Today</th><th>With [this]</th></tr></thead>
+    <tbody>
+      <tr><td class="k">[data model]</td><td>[what exists, real names]</td><td>[what changes; <span class="mono">real.keys</span>]</td></tr>
+      <tr><td class="k">[API]</td><td>[…]</td><td>[…]</td></tr>
+      <tr><td class="k">[permissions · audit]</td><td>[…]</td><td>[no new capability / which one]</td></tr>
+      <tr><td class="k">[neighbouring feature]</td><td>[…]</td><td>[the interaction nobody would think of]</td></tr>
+      <tr><td class="k">[docs]</td><td>[…]</td><td>[which page changes]</td></tr>
+    </tbody>
+  </table></div>
+
+  <section class="notes">
+    <h3>How it works, and what's open</h3>
+    <h4>The model</h4>
+    <ol>
+      <li><b>[Principle.]</b> [One or two sentences.]</li>
+      <li><b>[Where the trust boundary is.]</b> [What the server re-checks; what it never trusts from the client.]</li>
+      <li><b>[What it is not.]</b> [The limit, stated plainly.]</li>
+      <li><b>[No new X.]</b> [Which existing permissions / settings cover it.]</li>
+    </ol>
+    <!-- Phase 2: rename to "Decisions (<who>, <date>)" and rewrite each line in decided words, keeping the numbers. -->
+    <h4>Questions (recommendations in italics)</h4>
+    <ol>
+      <li><b>[The riskiest question?]</b> [The tension in one sentence.] <i>[Recommended answer.]</i> [Why.]</li>
+      <li><b>[Question?]</b> [Tension.] <i>[Recommended answer.]</i> [Why.]</li>
+      <li><b>[Defaults.]</b> <i>[The default for each new setting, chosen so nothing changes until someone turns it on.]</i></li>
+    </ol>
+    <!-- Phase 2: <h4>New questions from the revision (recommendations in italics)</h4> numbered N1, N2… -->
+    <h4>Build (after sign-off)</h4>
+    <ul>
+      <li><b>Slice 1</b>: [what ships; the smallest useful whole].</li>
+      <li><b>Slice 2</b>: [...].</li>
+      <li>[Which slices get a security review; the tests that gate each.]</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

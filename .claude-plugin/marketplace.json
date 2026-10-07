@@ -1,0 +1,12 @@
+{
+  "name": "decision-proposal",
+  "owner": { "name": "Don Campbell" },
+  "description": "The decision-proposal skill: propose → decide → spec.",
+  "plugins": [
+    {
+      "name": "decision-proposal",
+      "source": "./",
+      "description": "Visual HTML proposals with edge cases and a decision register, then a one-page spec."
+    }
+  ]
+}

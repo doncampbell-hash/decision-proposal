@@ -1,0 +1,6 @@
+{
+  "name": "decision-proposal",
+  "version": "1.0.0",
+  "description": "Lay out a feature as one visual HTML proposal (mockups, edge cases, states, a survey of what it touches, questions with recommendations), fold the answers in as a decision register, then write the spec.",
+  "license": "MIT"
+}

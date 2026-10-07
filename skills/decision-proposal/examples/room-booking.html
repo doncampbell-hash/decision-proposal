@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Room booking — proposal</title>
+<!--
+  EXAMPLE for the decision-proposal skill: a fictional company (Harbor & Pine) and a fictional
+  codebase. Shown at phase 2: the decider has answered, the Questions became Decisions, one frame
+  was added after the answers (3d), and follow-up questions N1–N3 are open.
+  REVISED 2026-10-03 after Sam Rivera's answers. First draft 2026-10-01. Not built.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#0a0d14; --surface:#0d1119; --panel:#131925; --raised:#1a2235; --sunk:#080b12;
+    --border:#212d44; --border-hi:#2e3f60; --border-lo:#18213a;
+    --bright:#e6eeff; --label:#c2ceea; --body:#94a3c0; --muted:#889fc5; --dim:#5c6f94;
+    --accent:#2563eb; --accent-hi:#6b96ff; --accent-lo:rgba(37,99,235,.12);
+    --gold:#c9a363; --gold-lo:rgba(201,163,99,.14); --ok:#34d399; --ok-lo:rgba(52,211,153,.14);
+    --warn:#f97316; --warn-lo:rgba(249,115,22,.14); --danger:#f87171; --danger-lo:rgba(248,113,113,.14);
+    --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",ui-monospace,monospace;
+    --radius:6px; --radius-lg:10px;
+    color-scheme: dark;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:var(--body); font:13px/1.5 var(--font-body); }
+  .page { max-width:1320px; margin:0 auto; padding:32px 16px 64px; }
+
+  /* page text */
+  h1.t { font-size:22px; font-weight:600; color:var(--bright); margin:0; letter-spacing:-.01em; }
+  h2.sec { font-size:15px; font-weight:600; color:var(--bright); margin:44px 0 4px; }
+  h2.sec small { font-weight:400; color:var(--muted); font-size:12px; }
+  p.sec, .lede { color:var(--muted); font-size:12.5px; margin:6px 0 16px; max-width:900px; }
+  .lede b, p.sec b, p.note b { color:var(--label); font-weight:500; }
+  p.note { color:var(--muted); font-size:12px; max-width:900px; margin:14px 0 0; }
+  .mono { font-family:var(--font-mono); font-size:11px; }
+  .caption { font-family:var(--font-mono); font-size:10.5px; color:var(--muted); margin-top:8px; }
+  .caption b { color:var(--label); font-weight:500; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr)); gap:20px; align-items:start; }
+  .grid3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:20px; align-items:start; }
+  .scroll { overflow-x:auto; }
+
+  /* flow strip */
+  .flow { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin:0 0 8px; }
+  .step { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:12px 14px; }
+  .step .k { font-family:var(--font-mono); font-size:10.5px; color:var(--accent-hi); }
+  .step b { display:block; color:var(--bright); font-weight:600; font-size:13px; margin:4px 0 2px; }
+  .step span { font-size:11.5px; color:var(--muted); }
+
+  /* mockup primitives: an app shell (sidebar + top bar), tables, buttons, pills, fields, dialogs */
+  .screen { border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; background:var(--ink); }
+  .shell { display:flex; min-height:420px; }
+  .side { width:176px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border); padding:12px 8px; }
+  .side .grp { font-size:11px; color:var(--dim); padding:10px 10px 4px; }
+  .side span { display:block; padding:6px 10px; border-radius:var(--radius); font-size:12.5px; color:var(--body); border-left:2px solid transparent; }
+  .side span.on { background:var(--accent-lo); color:var(--bright); border-left-color:var(--accent); padding-left:8px; }
+  .main { flex:1; min-width:0; display:flex; flex-direction:column; }
+  .top { height:56px; padding:0 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; gap:14px; }
+  .top h3 { margin:0; font-size:13px; font-weight:600; color:var(--bright); }
+  .top .m { font-size:11.5px; color:var(--muted); }
+  .top .r { margin-left:auto; display:flex; gap:8px; }
+  .content { padding:18px 20px; }
+  .btn { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px; border-radius:var(--radius); font-size:12px; background:var(--accent); color:#fff; font-weight:500; white-space:nowrap; }
+  .btn.ghost { background:transparent; color:var(--label); border:1px solid var(--border-hi); }
+  .btn.sm { height:26px; padding:0 10px; font-size:11.5px; }
+  .btn.danger { background:var(--danger); color:var(--ink); }
+  .btn.off { opacity:.4; }
+  .opill { font-size:10.5px; font-family:var(--font-mono); padding:2px 7px; border-radius:99px; background:var(--raised); color:var(--label); border:1px solid var(--border-hi); white-space:nowrap; }
+  .opill.ok { background:var(--ok-lo); color:var(--ok); border-color:transparent; }
+  .opill.warn { background:var(--warn-lo); color:var(--warn); border-color:transparent; }
+  .opill.b { background:var(--accent-lo); color:var(--accent-hi); border-color:transparent; }
+  .opill.v { background:var(--gold-lo); color:var(--gold); border-color:transparent; }
+  .opill.m { background:transparent; color:var(--muted); }
+  table.t { width:100%; border-collapse:collapse; }
+  table.t th { text-align:left; font-size:11.5px; font-weight:500; color:var(--muted); padding:0 14px; height:32px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  table.t th:first-child, table.t td:first-child { padding-left:20px; }
+  table.t td { padding:0 14px; height:44px; border-bottom:1px solid var(--border-lo); font-size:12.5px; color:var(--label); vertical-align:middle; }
+  table.t td .sub { display:block; font-size:11px; color:var(--muted); line-height:1.3; }
+  table.t tr.on td { background:var(--accent-lo); }
+  table.t tr.dim td { color:var(--dim); }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:12px; color:var(--label); font-weight:500; margin-bottom:6px; }
+  .field .hint { font-size:11.5px; color:var(--muted); margin-top:5px; }
+  .input { height:32px; border:1px solid var(--border-hi); background:var(--sunk); border-radius:var(--radius); padding:0 10px; display:flex; align-items:center; color:var(--bright); font-size:12.5px; }
+  .seg { display:inline-flex; gap:2px; background:var(--sunk); border:1px solid var(--border); border-radius:var(--radius); padding:2px; }
+  .seg span { font-size:12px; padding:3px 10px; border-radius:4px; color:var(--muted); }
+  .seg span.on { background:var(--raised); color:var(--bright); }
+  .banner { font-size:11.5px; color:var(--label); background:var(--gold-lo); border-left:2px solid var(--gold); border-radius:0 var(--radius) var(--radius) 0; padding:7px 11px; margin-top:10px; line-height:1.45; }
+  .banner.b { background:var(--accent-lo); border-left-color:var(--accent); }
+  .banner.w { background:var(--warn-lo); border-left-color:var(--warn); }
+  .dialog { max-width:480px; margin:18px auto; background:var(--panel); border:1px solid var(--border-hi); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:0 20px 40px -12px rgba(0,0,0,.6); }
+  .dialog h5 { margin:0 0 3px; font-size:15px; color:var(--bright); font-weight:600; }
+  .dialog .m { font-size:12px; color:var(--muted); margin-bottom:14px; }
+  .dialog .acts { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; align-items:center; }
+  .dialog .acts .l { margin-right:auto; font-size:11.5px; color:var(--muted); }
+  /* a phone-sized frame for mobile / end-user screens */
+  .phone { width:300px; max-width:100%; margin:0 auto; border:1px solid var(--border-hi); border-radius:28px; padding:28px 18px; background:var(--panel); min-height:520px; }
+  .phone h1 { font-size:20px; color:var(--bright); margin:40px 0 8px; font-weight:600; }
+  .phone p { font-size:13px; color:var(--muted); }
+
+  /* tables of rules, states and copy, kept data, and the survey */
+  table.copy { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  table.copy th { text-align:left; font-size:11px; font-weight:500; color:var(--dim); padding:8px 12px; border-bottom:1px solid var(--border); background:var(--panel); }
+  table.copy td { padding:9px 12px; border-bottom:1px solid var(--border-lo); font-size:12px; color:var(--label); vertical-align:top; }
+  table.copy td.k { font-family:var(--font-mono); font-size:11px; color:var(--muted); white-space:nowrap; }
+  table.copy td q { color:var(--bright); quotes:"\201C" "\201D"; }
+  table.copy tr.set td { background:var(--panel); color:var(--gold); font-size:11px; font-weight:600; }
+
+  /* the notes panel: how it works, questions → decisions, build */
+  .notes { margin-top:44px; background:var(--surface); border:1px solid var(--border-hi); border-radius:var(--radius-lg); padding:20px 22px; }
+  .notes h3 { margin:0 0 4px; font-size:15px; color:var(--bright); font-weight:600; }
+  .notes h4 { margin:20px 0 6px; font-size:12px; font-weight:600; color:var(--gold); }
+  .notes ol, .notes ul { margin:0; padding-left:20px; }
+  .notes li { margin:7px 0; font-size:12.5px; color:var(--body); }
+  .notes li b { color:var(--bright); font-weight:500; }
+  .notes li i { color:var(--label); }
+
+  @media (max-width:720px) { .side { display:none; } }
+
+  /* extras for this example: a day timeline and a room tablet */
+  .day { width:100%; }
+  .day .hrs, .day .row { display:grid; grid-template-columns:170px 1fr; }
+  .day .hrs { height:30px; border-bottom:1px solid var(--border); }
+  .day .hrs .lab { position:relative; }
+  .day .hrs .lab span { position:absolute; top:8px; transform:translateX(-50%); font-family:var(--font-mono); font-size:10px; color:var(--dim); }
+  .day .row { border-bottom:1px solid var(--border-lo); }
+  .day .room { padding:7px 14px 7px 20px; font-size:12.5px; color:var(--bright); line-height:1.25; }
+  .day .room .sub { display:block; font-size:10.5px; color:var(--muted); }
+  .track { position:relative; height:46px; background:repeating-linear-gradient(to right, var(--border-lo) 0 1px, transparent 1px 10%); }
+  .blk { position:absolute; top:7px; bottom:7px; border-radius:4px; background:var(--raised); border-left:2px solid var(--border-hi); font-size:10.5px; color:var(--label); padding:3px 7px; overflow:hidden; white-space:nowrap; line-height:1.25; }
+  .blk .sub { display:block; color:var(--muted); font-size:10px; }
+  .blk.mine { background:var(--accent-lo); border-left-color:var(--accent-hi); color:var(--bright); }
+  .blk.in { background:var(--ok-lo); border-left-color:var(--ok); }
+  .blk.tent { background:transparent; border:1px dashed var(--gold); color:var(--gold); }
+  .blk.gone { background:repeating-linear-gradient(135deg, transparent 0 6px, var(--border-lo) 6px 8px); border-left-color:var(--dim); color:var(--dim); }
+  .blk.sel { background:transparent; border:1px dashed var(--accent-hi); color:var(--accent-hi); }
+  .now { position:absolute; top:0; bottom:0; width:1px; background:var(--danger); }
+  .now::before { content:""; position:absolute; top:-3px; left:-3px; width:7px; height:7px; border-radius:50%; background:var(--danger); }
+  .filters { display:flex; gap:8px; align-items:center; padding:10px 20px; border-bottom:1px solid var(--border-lo); flex-wrap:wrap; }
+  .chip { font-size:11.5px; color:var(--label); border:1px solid var(--border-hi); border-radius:99px; padding:3px 10px; }
+  .chip.on { background:var(--accent-lo); border-color:transparent; color:var(--bright); }
+  .li { display:flex; gap:10px; align-items:center; padding:9px 0; border-top:1px solid var(--border-lo); }
+  .li:first-child { border-top:0; }
+  .li .l { flex:1; min-width:0; }
+  .li .l b { color:var(--bright); font-weight:500; font-size:12.5px; }
+  .li .l .sub { display:block; font-size:11px; color:var(--muted); }
+  .li.dis { opacity:.45; }
+  .tablet { aspect-ratio:4/3; border:1px solid var(--border-hi); border-radius:18px; padding:22px 24px; display:flex; flex-direction:column; background:var(--panel); }
+  .tablet.busy { background:linear-gradient(180deg, rgba(249,115,22,.10), var(--panel) 55%); }
+  .tablet.free { background:linear-gradient(180deg, rgba(52,211,153,.10), var(--panel) 55%); }
+  .tablet .nm { font-size:13px; color:var(--muted); }
+  .tablet .big { font-size:26px; color:var(--bright); font-weight:600; margin-top:auto; line-height:1.15; }
+  .tablet .who { font-size:13px; color:var(--label); margin-top:4px; }
+  .tablet .act { margin-top:18px; display:flex; gap:8px; align-items:center; }
+  .tablet .act .btn { height:38px; font-size:13px; padding:0 18px; }
+  .tablet .fine { font-size:11px; color:var(--muted); margin-top:10px; }
+  .mail { border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); }
+  .mail .hd { padding:10px 14px; border-bottom:1px solid var(--border-lo); font-size:11px; color:var(--muted); }
+  .mail .hd b { color:var(--bright); font-weight:500; font-size:12.5px; display:block; margin-top:2px; }
+  .mail .bd { padding:14px; font-size:12.5px; color:var(--label); }
+  .mail .bd p { margin:0 0 10px; }
+</style>
+</head>
+<body>
+<main class="page">
+  <h1 class="t">Room booking — proposal</h1>
+  <p class="lede">People <b>book a meeting room for a block of time</b>, from a day view of every room on a floor or by asking for "a room for 6 at 2 pm". The <b>database refuses a double booking</b>, so two people clicking at once can't both win. A booking that nobody <b>checks in</b> to within 10 minutes of its start is <b>released</b>, so rooms booked "just in case" go back to the people who need them. Bookings can <b>repeat weekly</b>, a few rooms need <b>approval</b>, and Facilities can take a room <b>out of service</b> without stranding the people who had it. It is not a calendar: it sends calendar invites and keeps them in step, but your calendar stays where it is. Desk booking is not part of this.</p>
+
+  <div class="flow">
+    <div class="step"><div class="k">find</div><b>Day view, or "find me a room"</b><span>Every room on a floor, hour by hour. Or say how many, when and what you need.</span></div>
+    <div class="step"><div class="k">hold</div><b>One booking, one room, one time</b><span>Checked by the database, not the screen. Repeats weekly for up to 6 months.</span></div>
+    <div class="step"><div class="k">arrive</div><b>Check in at the room</b><span>On the tablet by the door, or from the booking link. No check-in by +10 min: released.</span></div>
+    <div class="step"><div class="k">manage</div><b>Facilities sets the rules</b><span>Per organisation, building or room. Approval rooms, out of service, opening hours.</span></div>
+  </div>
+  <p class="note"><b>Revised 3 Oct 2026</b> after Sam Rivera's answers (recorded in the notes panel). New since the first draft: private bookings (frame 1b, the table in 7), taking a room out of service (frame 3d), and what happens after three no-shows in a row (question N1). <b>Frames marked new need a look before the spec.</b></p>
+
+  <!-- ─────────── 1 · DAY VIEW ─────────── -->
+  <h2 class="sec">1 · Find a room on the day view <small>· /book</small></h2>
+  <p class="sec">Rooms down the side, the building's opening hours across the top, one row per room. Drag across a free stretch, or click it, to start a booking. Everything you can't book is still shown, and says why, so nobody wonders whether the Boardroom is free or just hidden. Times are the <b>room's</b> time zone; yours is shown on hover when it differs.</p>
+  <div class="screen"><div class="shell" style="min-height:0">
+    <div class="side"><div class="grp">Rooms</div><span class="on">Book</span><span>My bookings</span><span>Find me a room</span><div class="grp">Manage</div><span>Rooms</span><span>Approvals <b class="opill v" style="margin-left:4px;font-weight:400">1</b></span><span>Settings</span></div>
+    <div class="main">
+      <div class="top"><h3>Tuesday 14 Oct</h3><span class="m">Harbor &amp; Pine · 3rd floor · Europe/London</span><div class="r"><span class="btn ghost sm">‹ Today ›</span><span class="btn sm">Find me a room</span></div></div>
+      <div class="filters"><span class="chip on">3rd floor</span><span class="chip">6+ seats</span><span class="chip">Screen</span><span class="chip">Video</span><span class="chip">Free now</span></div>
+      <div class="day">
+        <div class="hrs"><div></div><div class="lab"><span style="left:0%">08</span><span style="left:10%">09</span><span style="left:20%">10</span><span style="left:30%">11</span><span style="left:40%">12</span><span style="left:50%">13</span><span style="left:60%">14</span><span style="left:70%">15</span><span style="left:80%">16</span><span style="left:90%">17</span><span style="left:99%">18</span></div></div>
+        <div class="row"><div class="room">Fjord<span class="sub">8 · screen · video</span></div><div class="track">
+          <div class="blk" style="left:10%;width:10%">Design review<span class="sub">Elena Ruiz</span></div>
+          <div class="blk" style="left:35%;width:10%">Booked<span class="sub">private</span></div>
+          <div class="blk sel" style="left:60%;width:10%">New · 14:00–15:00</div>
+          <div class="now" style="left:53.3%"></div></div></div>
+        <div class="row"><div class="room">Atlas<span class="sub">8 · screen</span></div><div class="track">
+          <div class="blk mine" style="left:20%;width:15%">Weekly sync ↻<span class="sub">you</span></div>
+          <div class="blk mine" style="left:70%;width:10%">1:1 with Aisha<span class="sub">you</span></div>
+          <div class="now" style="left:53.3%"></div></div></div>
+        <div class="row"><div class="room">Harbor<span class="sub">4 · video</span></div><div class="track">
+          <div class="blk" style="left:5%;width:5%">Call</div>
+          <div class="blk in" style="left:50%;width:10%">Checked in<span class="sub">Aisha Khan</span></div>
+          <div class="blk" style="left:80%;width:10%">Interview<span class="sub">Marcus Lee</span></div>
+          <div class="now" style="left:53.3%"></div></div></div>
+        <div class="row"><div class="room">Summit<span class="sub">12 · screen · video</span></div><div class="track">
+          <div class="blk" style="left:10%;width:30%">All-hands prep<span class="sub">Marcus Lee</span></div>
+          <div class="blk gone" style="left:45%;width:10%">Released 12:40<span class="sub">nobody came</span></div>
+          <div class="now" style="left:53.3%"></div></div></div>
+        <div class="row"><div class="room">Boardroom<span class="sub">16 · needs approval</span></div><div class="track">
+          <div class="blk tent" style="left:55%;width:20%">Requested · Board pack<span class="sub">waiting for Facilities</span></div>
+          <div class="now" style="left:53.3%"></div></div></div>
+        <div class="row" style="border-bottom:0"><div class="room">Nook<span class="sub">2 · phone room</span></div><div class="track">
+          <div class="blk gone" style="left:0;width:100%">Out of service until Thu 16 Oct · new chair on order</div>
+          <div class="now" style="left:53.3%"></div></div></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="caption"><b>1a</b> · seen by Priya Shah · <span class="mono">/book?date=2026-10-14&amp;floor=3</span> · anyone with <span class="mono">rooms.book</span> · hours from the building's opening hours · the red line is now · ↻ = part of a repeating booking</div>
+
+  <div class="grid2" style="margin-top:18px">
+    <div>
+      <div class="dialog" style="margin:0">
+        <h5>Book Fjord</h5>
+        <div class="m">8 seats · screen · video · 3rd floor</div>
+        <div class="field"><label>When</label><div class="input">Tue 14 Oct · 14:00 – 15:00</div><div class="hint">Free. Your time zone is the same as the room's.</div></div>
+        <div class="field"><label>Title</label><div class="input">Q4 planning</div></div>
+        <div class="field"><label>People</label><div class="input">Elena Ruiz, Aisha Khan, +3</div><div class="hint">They get a calendar invite. 6 people in an 8-seat room.</div></div>
+        <div class="field"><label>Repeat</label><span class="seg"><span class="on">Doesn't repeat</span><span>Weekly</span></span></div>
+        <div class="field" style="margin-bottom:0"><label>Private · <span style="font-weight:400;color:var(--muted)">new</span></label><span class="seg"><span class="on">No</span><span>Yes</span></span><div class="hint">Private: people outside the booking see "Booked", not the title.</div></div>
+        <div class="acts"><span class="l">Check in by 14:10 or it's released</span><span class="btn ghost sm">Cancel</span><span class="btn sm">Book</span></div>
+      </div>
+      <div class="caption"><b>1b</b> · from a click or drag on 1a · the room and time are fixed here; change them on the grid</div>
+    </div>
+    <table class="copy">
+      <thead><tr><th>On the grid</th><th>Means</th></tr></thead>
+      <tbody>
+        <tr><td class="k">grey</td><td>Someone else's booking. Title and organiser, or just "Booked" when private.</td></tr>
+        <tr><td class="k">blue</td><td>Yours, or one you're invited to.</td></tr>
+        <tr><td class="k">green</td><td>Checked in: someone is in the room now.</td></tr>
+        <tr><td class="k">gold, dashed</td><td>Requested, waiting for approval. Nobody else can book over it while it waits.</td></tr>
+        <tr><td class="k">hatched</td><td>Released, or out of service. Released time is free again.</td></tr>
+        <tr><td class="k">blue, dashed</td><td>The booking you're making.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ─────────── 2 · FIND ME A ROOM ─────────── -->
+  <h2 class="sec">2 · Find me a room <small>· when you know what you need, not which room</small></h2>
+  <p class="sec">Most people don't care which room; they care about seats, time and a screen. The answer is ranked: the smallest room that fits first, so the 12-seat room stays free for a group of 12. When nothing fits, it says why and offers the nearest times rather than an empty list.</p>
+  <div class="grid2">
+    <div>
+      <div class="screen"><div class="content">
+        <div class="field"><label>I need</label><div class="input">6 people · Tue 14 Oct · 14:00 · 1 hour · video</div></div>
+        <div class="li"><div class="l"><b>Fjord</b><span class="sub">8 seats · screen · video · free 14:00–15:00</span></div><span class="opill ok">Best fit</span><span class="btn sm">Book</span></div>
+        <div class="li"><div class="l"><b>Summit</b><span class="sub">12 seats · screen · video · free until 17:00</span></div><span class="opill m">Bigger than you need</span><span class="btn ghost sm">Book</span></div>
+        <div class="li dis"><div class="l"><b>Atlas</b><span class="sub">8 seats · no video</span></div></div>
+        <div class="li dis"><div class="l"><b>Harbor</b><span class="sub">4 seats · too small</span></div></div>
+      </div></div>
+      <div class="caption"><b>2a</b> · <span class="mono">/book/find</span> · sorted by fewest spare seats, then distance from your floor · rooms that don't fit are listed with the reason, dimmed</div>
+    </div>
+    <div>
+      <div class="screen"><div class="content">
+        <div class="field"><label>I need</label><div class="input">6 people · Tue 14 Oct · 09:00 · 1 hour · video</div></div>
+        <div class="banner w" style="margin:0 0 12px">Nothing with video is free at 09:00 for 6.</div>
+        <div class="li"><div class="l"><b>10:00 · Fjord</b><span class="sub">an hour later, everything you asked for</span></div><span class="btn ghost sm">Book</span></div>
+        <div class="li"><div class="l"><b>09:00 · Atlas</b><span class="sub">on time, 8 seats, but no video</span></div><span class="btn ghost sm">Book</span></div>
+        <div class="li"><div class="l"><b>09:00 · Harbor</b><span class="sub">on time, has video, but 4 seats: works if 2 people join remotely</span></div><span class="btn ghost sm">Book</span></div>
+      </div></div>
+      <div class="caption"><b>2b</b> · nothing fits · nearest times first, then dropping one need at a time, each labelled with what you give up</div>
+    </div>
+  </div>
+
+  <!-- ─────────── 3 · EDGE CASES ─────────── -->
+  <h2 class="sec">3 · When it doesn't go to plan</h2>
+  <p class="sec">The four things people will hit in the first week. Each one ends with something to do next, never just an error.</p>
+  <div class="grid2">
+    <div>
+      <div class="dialog" style="margin:0">
+        <h5>Fjord was just booked</h5>
+        <div class="m">Marcus Lee booked Fjord 14:00–15:00 while you were filling this in.</div>
+        <div class="li"><div class="l"><b>Atlas · 14:00–15:00</b><span class="sub">8 seats · screen · no video</span></div><span class="btn sm">Book Atlas</span></div>
+        <div class="li"><div class="l"><b>Fjord · 15:00–16:00</b><span class="sub">same room, an hour later</span></div><span class="btn ghost sm">Book</span></div>
+        <div class="acts"><span class="l">Your title and people are kept</span><span class="btn ghost sm">Back to the day</span></div>
+      </div>
+      <div class="caption"><b>3a</b> · two people, one slot · the database's constraint picks the winner; the loser keeps what they typed</div>
+    </div>
+    <div>
+      <div class="dialog" style="margin:0">
+        <h5>Weekly on Tuesday, 14:00–15:00</h5>
+        <div class="m">Fjord · 14 Oct 2026 to 31 Mar 2027 · 3 of 24 dates clash</div>
+        <div class="li"><div class="l"><b>Tue 4 Nov</b><span class="sub">Fjord taken · Atlas free (no video)</span></div><span class="seg"><span class="on">Atlas</span><span>Skip</span></span></div>
+        <div class="li"><div class="l"><b>Tue 25 Nov</b><span class="sub">Fjord taken · Summit free</span></div><span class="seg"><span class="on">Summit</span><span>Skip</span></span></div>
+        <div class="li"><div class="l"><b>Tue 23 Dec</b><span class="sub">building closed</span></div><span class="opill m">skipped</span></div>
+        <div class="acts"><span class="l">21 in Fjord, 2 elsewhere, 1 skipped</span><span class="btn ghost sm">Back</span><span class="btn sm">Book 23</span></div>
+      </div>
+      <div class="caption"><b>3b</b> · a repeat with clashes · book the free dates, offer a room for each clash, skip closed days · decision 3</div>
+    </div>
+    <div>
+      <div class="screen"><div class="content">
+        <div class="field" style="margin-bottom:8px"><label>Board pack review <span class="opill v" style="margin-left:6px">Requested</span></label><div class="hint">Boardroom · Tue 14 Oct · 13:30–15:30 · Elena Ruiz</div></div>
+        <div class="banner">Waiting for Facilities. Nobody else can book over it while it waits. If nobody answers by <b>13:30</b>, it's declined and Elena is told.</div>
+        <div class="acts" style="display:flex;gap:8px;margin-top:14px"><span class="btn ghost sm">Withdraw</span><span class="btn ghost sm">Find another room</span></div>
+      </div></div>
+      <div class="caption"><b>3c</b> · an approval room, as the requester sees it · approvers see Approve / Decline under Approvals · unanswered by the start = declined (decision 5)</div>
+    </div>
+    <div>
+      <div class="dialog" style="margin:0">
+        <h5>Take Atlas out of service?</h5>
+        <div class="m">Mon 20 Oct – Fri 24 Oct · 7 bookings in that time</div>
+        <div class="field"><label>Those bookings</label><span class="seg"><span class="on">Move to a similar room</span><span>Cancel them</span></span><div class="hint">5 can move to Fjord or Summit. 2 have nowhere to go and will be cancelled. Every organiser is told which.</div></div>
+        <div class="field" style="margin-bottom:0"><label>Reason, shown on the grid</label><div class="input">New screen being fitted</div></div>
+        <div class="acts"><span class="l">Logged with your name</span><span class="btn ghost sm">Cancel</span><span class="btn danger sm">Take out of service</span></div>
+      </div>
+      <div class="caption"><b>3d</b> · new · added after the answers · <span class="mono">rooms.manage</span> · "similar" = same floor first, at least the seats, the same screen/video · the moved booking keeps its organiser (question N2)</div>
+    </div>
+  </div>
+
+  <!-- ─────────── 4 · ARRIVE ─────────── -->
+  <h2 class="sec">4 · Arriving, and nobody arriving</h2>
+  <p class="sec">The tablet by the door shows the room's state from across the corridor. Check-in opens 10 minutes before the start. At start + 10 with no check-in, the booking is released, the organiser is told, and the tablet offers the room to whoever is standing there.</p>
+  <div class="grid3">
+    <div>
+      <div class="tablet busy"><div class="nm">Fjord · 3rd floor</div><div class="big">Q4 planning<br>14:00 – 15:00</div><div class="who">Priya Shah</div><div class="act"><span class="btn">Check in</span></div><div class="fine">Released at 14:10 if nobody checks in.</div></div>
+      <div class="caption"><b>4a</b> · 14:04 · booked, not checked in · anyone in the room can check in; it doesn't need to be the organiser</div>
+    </div>
+    <div>
+      <div class="tablet free"><div class="nm">Summit · 3rd floor</div><div class="big">Free until 17:00</div><div class="who">Released at 12:40 · nobody checked in</div><div class="act"><span class="btn">Book 30 min</span><span class="btn ghost">1 hour</span></div><div class="fine">Booking here puts it under the name of whoever taps their badge.</div></div>
+      <div class="caption"><b>4b</b> · after a release · book on the spot by badge tap</div>
+    </div>
+    <div>
+      <div class="mail"><div class="hd">To Marcus Lee<b>Summit was released — nobody checked in</b></div><div class="bd"><p>Your booking "All-hands dry run", Tue 14 Oct 12:30–13:30, was released at 12:40 because nobody checked in.</p><p>The room is free again. If you still need it, book it now.</p><span class="btn sm">Open the day view</span></div></div>
+      <div class="caption"><b>4c</b> · to the organiser · one email per release · the third in a row on a repeating booking asks instead (question N1)</div>
+    </div>
+  </div>
+
+  <!-- ─────────── 5 · WHICH RULE WINS ─────────── -->
+  <h2 class="sec">5 · Which rule wins</h2>
+  <p class="sec">Each rule is set once for the organisation and can be changed per building or per room, where the organisation allows it.</p>
+  <table class="copy">
+    <thead><tr><th>For one booking</th><th>Auto-release, longest booking, how far ahead, needs approval…</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1 · the room</td><td>its own value, if it has one (the Boardroom needs approval; the Nook has no auto-release). Otherwise ↓</td></tr>
+      <tr><td class="k">2 · the building</td><td>the building's value, if the organisation lets buildings change it. Otherwise ↓</td></tr>
+      <tr><td class="k">3 · the organisation</td><td>the default: release at +10 min, 4 hours longest, book up to 90 days ahead, no approval</td></tr>
+      <tr><td class="k">no tablet</td><td>a room with no tablet never auto-releases unless check-in from the booking link is on (question N3)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────── 6 · STATES AND COPY ─────────── -->
+  <h2 class="sec">6 · States and copy</h2>
+  <table class="copy">
+    <thead><tr><th>When</th><th>The organiser sees</th><th>Everyone else sees</th></tr></thead>
+    <tbody>
+      <tr><td class="k">booked</td><td><q>Booked · check in by 14:10</q></td><td><q>Q4 planning · Priya Shah</q>, or <q>Booked</q> when private</td></tr>
+      <tr><td class="k">requested</td><td><q>Requested · waiting for Facilities</q></td><td><q>Requested</q> (gold, dashed)</td></tr>
+      <tr><td class="k">declined</td><td><q>Facilities declined the Boardroom: board meets that day.</q> + Find another room</td><td>free</td></tr>
+      <tr><td class="k">checked in</td><td><q>Checked in at 14:02</q></td><td><q>In use</q></td></tr>
+      <tr><td class="k">released</td><td><q>Released at 14:10 — nobody checked in</q> + email</td><td>free</td></tr>
+      <tr><td class="k">ended early</td><td><q>Ended at 14:35</q></td><td>free from 14:35</td></tr>
+      <tr><td class="k">clash</td><td><q>Fjord was just booked</q> + nearest rooms (3a)</td><td>—</td></tr>
+      <tr><td class="k">moved</td><td><q>Moved to Summit: Atlas is out of service (new screen).</q> + email</td><td>the booking in its new room</td></tr>
+      <tr><td class="k">cancelled by Facilities</td><td><q>Cancelled: Atlas is out of service and no similar room was free.</q> + email</td><td>free</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────── 7 · WHO SEES WHAT ─────────── -->
+  <h2 class="sec">7 · Who sees what on a booking <small>· private is new</small></h2>
+  <table class="copy">
+    <thead><tr><th>Field</th><th>Organiser + people</th><th>Everyone else</th><th>Facilities</th></tr></thead>
+    <tbody>
+      <tr><td class="k">room · time</td><td>yes</td><td>yes</td><td>yes</td></tr>
+      <tr><td class="k">organiser</td><td>yes</td><td>yes, unless private</td><td>yes</td></tr>
+      <tr><td class="k">title</td><td>yes</td><td>yes, unless private</td><td>yes, unless private</td></tr>
+      <tr><td class="k">people invited</td><td>yes</td><td>never</td><td>the count only</td></tr>
+      <tr><td class="k">calendar invite body</td><td>in their calendar</td><td>never</td><td>never · we never copy it</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ─────────── 8 · SURVEY ─────────── -->
+  <h2 class="sec">8 · What room booking touches <small>· survey of the code on main, 3 Oct 2026</small></h2>
+  <div class="scroll"><table class="copy" style="min-width:760px">
+    <thead><tr><th>Area</th><th>Today</th><th>With room booking</th></tr></thead>
+    <tbody>
+      <tr><td class="k">data model</td><td><span class="mono">rooms</span> (name, floor, seats, features) for the office map</td><td><span class="mono">bookings</span> with a <span class="mono">tstzrange</span> and an exclusion constraint on (room, range) for live bookings; <span class="mono">booking_series</span> for repeats; <span class="mono">room_outages</span></td></tr>
+      <tr><td class="k">settings</td><td>organisation and building settings with overrides</td><td>keys <span class="mono">booking.releaseAfterMin</span> (10), <span class="mono">booking.maxHours</span> (4), <span class="mono">booking.daysAhead</span> (90), <span class="mono">booking.approval</span> (off); a room-level override</td></tr>
+      <tr><td class="k">calendar sync</td><td>reads free/busy for the people picker</td><td>sends an invite per booking and updates it on move, release and cancel; edits made in the calendar come back only for time and title</td></tr>
+      <tr><td class="k">time zones</td><td>buildings have a zone</td><td>stored as instants; shown in the room's zone; repeats follow the room's wall clock across daylight-saving changes</td></tr>
+      <tr><td class="k">room tablets</td><td>—</td><td>a signed-in device per room, read-only except Check in and Book now; badge tap names the booker</td></tr>
+      <tr><td class="k">jobs</td><td>a job queue for email</td><td>a release job per booking at start + 10, cancelled on check-in; approval expiry at the start</td></tr>
+      <tr><td class="k">permissions</td><td><span class="mono">people.view</span>, <span class="mono">settings.manage</span></td><td><span class="mono">rooms.book</span> (everyone), <span class="mono">rooms.approve</span> (per room), <span class="mono">rooms.manage</span> (Facilities)</td></tr>
+      <tr><td class="k">people leaving</td><td>account deactivated</td><td>their future bookings are cancelled and the people invited are told; a series is ended, not deleted</td></tr>
+      <tr><td class="k">reporting</td><td>—</td><td>later: use per room, release rate, rooms too big for their bookings</td></tr>
+      <tr><td class="k">docs</td><td>the office map page</td><td>a Booking a room page; Facilities' settings page</td></tr>
+    </tbody>
+  </table></div>
+
+  <section class="notes">
+    <h3>How it works, and what was decided</h3>
+    <h4>The model</h4>
+    <ol>
+      <li><b>The database refuses a double booking.</b> An exclusion constraint on room and time range, for bookings that aren't cancelled or released. The screen's "Free" is a hint; the insert is the check, and a clash comes back as frame 3a.</li>
+      <li><b>Times are instants, shown in the room's zone.</b> A weekly 14:00 stays 14:00 in the room across a clock change, so a series is stored as a rule plus its dates, not 24 copies of one instant.</li>
+      <li><b>Release keeps rooms honest.</b> A booking is a promise to turn up. No check-in by +10 min frees the room and tells the organiser; it never deletes the booking's history.</li>
+      <li><b>It is not a calendar.</b> We send invites and keep them in step. We never read or keep what people write in them.</li>
+      <li><b>Three permissions</b>: book, approve (per room), manage (Facilities). No one needs a new role to book a room.</li>
+    </ol>
+    <h4>Decisions (Sam Rivera, Workplace lead, 3 Oct 2026)</h4>
+    <ol>
+      <li><b>Auto-release</b>: yes, at start + 10 minutes, changeable per building and room. As recommended.</li>
+      <li><b>How long a repeat can run</b>: 6 months, then the organiser is asked to renew. As recommended.</li>
+      <li><b>Clashes in a repeat</b>: book the free dates and offer a room for each clash (frame 3b). As recommended.</li>
+      <li><b>A big room for a small group</b>: warn ("Bigger than you need"), don't block. As recommended.</li>
+      <li><b>Approval rooms</b>: the request holds the slot; unanswered by the start = declined. <i>Changed:</i> recommended was "approved if unanswered"; Sam wants the safer default.</li>
+      <li><b>Titles</b>: shown to everyone by default. <i>Changed:</i> a <b>Private</b> switch on the booking hides title and organiser (frame 1b, table 7).</li>
+      <li><b>Out of service</b>: move bookings to a similar room where one is free, cancel the rest, tell every organiser. <i>New:</i> frame 3d.</li>
+      <li><b>Longest booking</b>: 4 hours; longer needs approval. As recommended.</li>
+      <li><b>Buffer between bookings</b>: unanswered, taken as recommended (none; people can end early).</li>
+    </ol>
+    <h4>New questions from the revision (recommendations in italics)</h4>
+    <ol>
+      <li><b>N1 · Three no-shows in a row on a repeat?</b> Releasing each one quietly hides that the series is dead. <i>On the third, email the organiser: keep the series, or cancel the rest. Never cancel it automatically.</i></li>
+      <li><b>N2 · Who owns a booking Facilities moved?</b> <i>The original organiser, still.</i> The move is logged with who did it, and the organiser can move it back if the old room frees up.</li>
+      <li><b>N3 · Check in without a tablet?</b> Rooms without one would never release. <i>Yes, from the booking link or calendar invite, from 10 minutes before to 10 minutes after the start, and only for people on the booking.</i></li>
+    </ol>
+    <h4>Build (after sign-off)</h4>
+    <ul>
+      <li><b>Slice 1</b>: bookings with the exclusion constraint, the day view, the booking dialog, private, cancel and end early, the calendar invite.</li>
+      <li><b>Slice 2</b>: Find me a room, repeating bookings with the clash dialog.</li>
+      <li><b>Slice 3</b>: room tablets, check-in (tablet and link), auto-release and its email, Book now.</li>
+      <li><b>Slice 4</b>: approval rooms, out of service with move/cancel.</li>
+      <li>Every slice: a database test that two concurrent inserts can't both succeed, a time-zone test across a clock change, and an end-to-end booking test. Slice 3 gets a security review (a shared device in a corridor).</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>
