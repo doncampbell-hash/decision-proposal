@@ -20,13 +20,31 @@ Claude lays the feature out as **one visual HTML page**: the model in a paragrap
 
 GitHub shows the HTML files as source code. To see them as pages, download the file and open it in a browser.
 
-The blank page:
+## The sample: booking meeting rooms
+
+A fictional company, Harbor & Pine, wants people to book meeting rooms for a block of time. The sample is the proposal for that after its first round of answers. It's here to show the method end to end, and as a starting point if you're designing a similar system: reserving something rather than someone (a room, a space, a piece of equipment).
+
+**The idea and the main screen.** One paragraph says what it is and isn't. Four cards give the model. Then the day view: every room on a floor, hour by hour, with each kind of booking drawn, and a legend saying what each one means. That's the screenshot at the top of this page.
+
+**Edge cases, each drawn.** Someone else booked the room while you were filling in the form. A weekly booking where 3 of 24 dates clash. A room that needs approval. Facilities taking a room out of service when 7 bookings are already in it. Each frame ends with something to do next. The caption under each one carries the technical detail and the decision it came from.
+
+![Four edge-case frames: a clash, a repeat with clashes, an approval request, and taking a room out of service](docs/screenshots/example-edge-cases.png)
+
+**The physical side.** The tablet by the door, before check-in and after a no-show releases the room, and the email the organiser gets.
+
+![Two room tablets and a release email](docs/screenshots/example-arrive.png)
+
+**After the tables, the decision register.** These come first: which rule wins, states and wording, who sees what, and what it touches in the code. Then the panel at the bottom: the model; the decisions, with "Changed" where the answer differed from the recommendation; follow-up questions N1–N3; and the build slices.
+
+![The notes panel: the model, decisions, new questions and build slices](docs/screenshots/example-decisions.png)
+
+The [spec it became](skills/decision-proposal/examples/room-booking-spec.md) cites those decisions by number.
+
+## The blank page
+
+What Claude starts from: every block, with placeholders saying what goes there.
 
 ![The blank template: placeholder title, card strip, an app-shell mockup and edge-case frames](docs/screenshots/blank-top.png)
-
-The bottom of the sample: the model, the decisions (with what changed from the recommendation), the new questions and the build slices:
-
-![The notes panel of the sample: the model, decisions, new questions and build slices](docs/screenshots/example-decisions.png)
 
 ## Install
 
